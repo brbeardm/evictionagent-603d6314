@@ -44,9 +44,15 @@ export const Route = createFileRoute("/api/public/stripe-webhook")({
           const { error } = orderId
             ? await query.eq("id", orderId)
             : await query.eq("stripe_session_id", session.id);
-          if (error) console.error("[stripe-webhook] order update failed", error);
+          if (error) {
+            // Real DB/network failure — 500 so Stripe retries.
+            console.error("[stripe-webhook] order update failed", error);
+            return new Response("order update failed", { status: 500 });
+          }
+          // Zero rows matched with no error = already paid (idempotent) → 200.
         } catch (e) {
           console.error("[stripe-webhook] handler error", e);
+          return new Response("handler error", { status: 500 });
         }
 
         return new Response("ok", { status: 200 });
