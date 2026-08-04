@@ -53,7 +53,7 @@ export function IntakeWizard({
   );
   const [form, setForm] = useState<Form>(empty);
   const [saving, setSaving] = useState(false);
-  const [done, setDone] = useState(false);
+  const [done, setDone] = useState<{ customerId: string; email: string } | null>(null);
 
   const submitPublic = useServerFn(submitIntake);
   const submitManual = useServerFn(submitManualIntake);
@@ -70,16 +70,17 @@ export function IntakeWizard({
     setSaving(true);
     try {
       const payload = { ...form, service_id: serviceId };
-      if (mode === "manual") await submitManual({ data: payload });
-      else await submitPublic({ data: payload });
-      toast.success("Intake submitted");
       if (mode === "manual") {
+        await submitManual({ data: payload });
+        toast.success("Intake submitted");
         setForm(empty);
         setServiceId("");
         setStep(1);
         onComplete?.();
       } else {
-        setDone(true);
+        const result = await submitPublic({ data: payload });
+        toast.success("Intake submitted");
+        setDone({ customerId: result.customerId, email: form.email.trim() });
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
@@ -90,38 +91,43 @@ export function IntakeWizard({
 
   if (done) {
     return (
-      <div className="rounded-2xl border border-primary/30 bg-primary/5 p-6">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
-          <Check className="h-5 w-5" />
+      <div>
+        <div className="rounded-2xl border border-primary/30 bg-primary/5 p-6">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+            <Check className="h-5 w-5" />
+          </div>
+          <h2 className="mt-4 text-2xl font-semibold text-foreground">
+            We've got your information.
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">Here's what happens next:</p>
+          <ol className="mt-4 space-y-3 text-sm text-foreground">
+            <li>
+              <span className="font-semibold">1. Intake review (within 1 business day).</span> A
+              case specialist checks your dates against the Harris County court record.
+            </li>
+            <li>
+              <span className="font-semibold">2. We call or text you.</span> We confirm your
+              deadline, explain your options, and collect anything still missing.
+            </li>
+            <li>
+              <span className="font-semibold">3. Documents prepared and filed.</span> You review
+              and sign; we file with your JP precinct court as your authorized agent.
+            </li>
+            <li>
+              <span className="font-semibold">4. You get every key date.</span> Trial date, appeal
+              deadline, and the earliest a writ can issue — tracked for you.
+            </li>
+          </ol>
+          <p className="mt-5 text-xs text-muted-foreground">
+            No payment has been collected. Nothing is filed until you approve it.
+          </p>
         </div>
-        <h2 className="mt-4 text-2xl font-semibold text-foreground">
-          We've got your information.
-        </h2>
-        <p className="mt-2 text-sm text-muted-foreground">Here's what happens next:</p>
-        <ol className="mt-4 space-y-3 text-sm text-foreground">
-          <li>
-            <span className="font-semibold">1. Intake review (within 1 business day).</span> A
-            case specialist checks your dates against the Harris County court record.
-          </li>
-          <li>
-            <span className="font-semibold">2. We call or text you.</span> We confirm your
-            deadline, explain your options, and collect anything still missing.
-          </li>
-          <li>
-            <span className="font-semibold">3. Documents prepared and filed.</span> You review
-            and sign; we file with your JP precinct court as your authorized agent.
-          </li>
-          <li>
-            <span className="font-semibold">4. You get every key date.</span> Trial date, appeal
-            deadline, and the earliest a writ can issue — tracked for you.
-          </li>
-        </ol>
-        <p className="mt-5 text-xs text-muted-foreground">
-          No payment has been collected. Nothing is filed until you approve it.
-        </p>
+        <CreateAccountPanel customerId={done.customerId} email={done.email} />
       </div>
     );
   }
+
+
 
   return (
     <div>
