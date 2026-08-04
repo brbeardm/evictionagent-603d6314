@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, CalendarClock, Gavel, Truck } from "lucide-react";
+import { ArrowLeft, Gavel, Truck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { CaseEventsPanel } from "@/components/CaseEventsPanel";
 import { formatDate, money, titleize } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/admin/customers/$id")({
