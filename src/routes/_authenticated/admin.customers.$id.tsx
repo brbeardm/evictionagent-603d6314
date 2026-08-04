@@ -155,32 +155,8 @@ function CustomerDetail() {
         )}
       </section>
 
-      <section className="rounded-2xl border border-border bg-card p-5">
-        <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
-          <CalendarClock className="h-4 w-4 text-primary" /> Case events
-        </h2>
-        {data.events.length === 0 ? (
-          <p className="mt-3 text-sm text-muted-foreground">No events recorded yet.</p>
-        ) : (
-          <ul className="mt-3 divide-y divide-border/60">
-            {data.events.map((e) => (
-              <li key={e.id} className="py-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-sm font-medium text-foreground">{e.title}</p>
-                  <span className="text-sm text-muted-foreground">{formatDate(e.due_date)}</span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {titleize(e.event_type)} ·{" "}
-                  {e.completed_at ? `Completed ${formatDate(e.completed_at)}` : "Open"}
-                </p>
-                {e.next_step && (
-                  <p className="mt-1 text-sm text-muted-foreground">Next step: {e.next_step}</p>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      {k && <CaseEventsPanel caseId={k.id} />}
+
 
       <section className="rounded-2xl border border-border bg-card p-5">
         <h2 className="text-sm font-semibold text-foreground">Orders</h2>
