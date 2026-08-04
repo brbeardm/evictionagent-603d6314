@@ -201,3 +201,225 @@ export const updateCustomerByStaff = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+/* ------------------------------------------------------------------ */
+/* Admin account management                                            */
+/* ------------------------------------------------------------------ */
+
+type AuthUserLike = {
+  id: string;
+  email?: string | null;
+  banned_until?: string | null;
+  user_metadata?: Record<string, unknown>;
+};
+
+function isBanned(u: AuthUserLike | null | undefined) {
+  const until = u?.banned_until;
+  if (!until) return false;
+  const t = Date.parse(until);
+  return Number.isNaN(t) ? true : t > Date.now();
+}
+
+async function loadAuthUser(admin: any, id: string): Promise<AuthUserLike | null> {
+  const { data, error } = await admin.auth.admin.getUserById(id);
+  if (error) return null;
+  return (data?.user ?? null) as AuthUserLike | null;
+}
+
+async function adminCount(admin: any) {
+  const { data, error } = await admin.from("profiles").select("id").eq("role", "admin");
+  if (error) throw new Error(error.message);
+  return (data ?? []) as { id: string }[];
+}
+
+async function assertNotLastAdmin(admin: any, userId: string) {
+  const admins = await adminCount(admin);
+  if (admins.some((a) => a.id === userId) && admins.length <= 1) {
+    throw new Error("There must be at least one active admin.");
+  }
+}
+
+/** Staff list enriched with email + login status. */
+export const listStaffAccounts = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await requireAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("profiles")
+      .select("id, full_name, role, created_at")
+      .order("created_at", { ascending: true });
+    if (error) throw new Error(error.message);
+
+    const rows = data ?? [];
+    const enriched = await Promise.all(
+      rows.map(async (p) => {
+        const u = await loadAuthUser(supabaseAdmin, p.id);
+        return {
+          ...p,
+          email: u?.email ?? null,
+          status: !u ? ("missing" as const) : isBanned(u) ? ("disabled" as const) : ("active" as const),
+        };
+      }),
+    );
+    return enriched;
+  });
+
+/** Customers with login + account status + order count. */
+export const listCustomerAccounts = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await requireAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("customers")
+      .select("id, first_name, last_name, email, phone, city, precinct, user_id, created_at, orders(id)")
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+
+    const rows = (data ?? []) as any[];
+    return await Promise.all(
+      rows.map(async (c) => {
+        let status: "active" | "disabled" | "none" = "none";
+        if (c.user_id) {
+          const u = await loadAuthUser(supabaseAdmin, c.user_id);
+          status = !u ? "none" : isBanned(u) ? "disabled" : "active";
+        }
+        return {
+          id: c.id as string,
+          first_name: c.first_name as string,
+          last_name: c.last_name as string,
+          email: c.email as string,
+          phone: (c.phone ?? null) as string | null,
+          city: (c.city ?? null) as string | null,
+          precinct: (c.precinct ?? null) as string | null,
+          user_id: (c.user_id ?? null) as string | null,
+          created_at: c.created_at as string,
+          order_count: Array.isArray(c.orders) ? c.orders.length : 0,
+          status,
+        };
+      }),
+    );
+  });
+
+/** Admin sets a user's password directly. */
+export const setUserPassword = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z.object({ userId: z.string().uuid(), newPassword: z.string().min(8).max(200) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(data.userId, {
+      password: data.newPassword,
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/** Admin emails a password reset link. */
+export const sendPasswordReset = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ email: z.string().trim().email().max(255) }).parse(input))
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const site = (process.env["SITE_URL"] ?? "").replace(/\/$/, "");
+    const { error } = await supabaseAdmin.auth.resetPasswordForEmail(data.email.toLowerCase(), {
+      redirectTo: `${site}/reset-password`,
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/** Ban (disable) or unban (reactivate) an auth login. Records are retained. */
+export const setUserBanned = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z.object({ userId: z.string().uuid(), banned: z.boolean() }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    if (data.banned) {
+      if (data.userId === context.userId) throw new Error("You cannot disable your own account.");
+      await assertNotLastAdmin(supabaseAdmin, data.userId);
+    }
+
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(data.userId, {
+      ban_duration: data.banned ? "876000h" : "none",
+    } as any);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/** Permanently delete a customer: auth login (if any) + case/order/event records. */
+export const purgeCustomer = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ customerId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: customer, error } = await supabaseAdmin
+      .from("customers")
+      .select("id, user_id")
+      .eq("id", data.customerId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!customer) throw new Error("Customer not found.");
+
+    const { data: cases } = await supabaseAdmin
+      .from("cases")
+      .select("id")
+      .eq("customer_id", customer.id);
+    const caseIds = (cases ?? []).map((c) => c.id);
+
+    if (caseIds.length) {
+      const { error: evErr } = await supabaseAdmin
+        .from("case_events")
+        .delete()
+        .in("case_id", caseIds);
+      if (evErr) throw new Error(evErr.message);
+    }
+
+    const { error: ordErr } = await supabaseAdmin
+      .from("orders")
+      .delete()
+      .eq("customer_id", customer.id);
+    if (ordErr) throw new Error(ordErr.message);
+
+    const { error: caseErr } = await supabaseAdmin
+      .from("cases")
+      .delete()
+      .eq("customer_id", customer.id);
+    if (caseErr) throw new Error(caseErr.message);
+
+    const { error: custErr } = await supabaseAdmin.from("customers").delete().eq("id", customer.id);
+    if (custErr) throw new Error(custErr.message);
+
+    if (customer.user_id) {
+      if (customer.user_id === context.userId) throw new Error("You cannot purge your own account.");
+      await supabaseAdmin.auth.admin.deleteUser(customer.user_id);
+    }
+    return { ok: true };
+  });
+
+/** Permanently delete a staff member: auth user + profiles row. */
+export const purgeStaff = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ userId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context);
+    if (data.userId === context.userId) throw new Error("You cannot purge your own account.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await assertNotLastAdmin(supabaseAdmin, data.userId);
+
+    const { error } = await supabaseAdmin.from("profiles").delete().eq("id", data.userId);
+    if (error) throw new Error(error.message);
+    const { error: delErr } = await supabaseAdmin.auth.admin.deleteUser(data.userId);
+    if (delErr) throw new Error(delErr.message);
+    return { ok: true };
+  });
