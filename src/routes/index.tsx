@@ -28,7 +28,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
-  const services = Route.useLoaderData();
+  const services = Route.useLoaderData() as PublicService[];
   const [stage, setStage] = useState<string | null>(null);
   const shown = stage ? services.filter((s) => s.stage === stage) : services;
 
