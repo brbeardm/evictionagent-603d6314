@@ -1,9 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDate, titleize } from "@/lib/format";
+import { useSessionUser } from "@/hooks/useSessionUser";
+import { listCustomerAccounts, purgeCustomer } from "@/lib/account.functions";
+import { AccountControls, StatusBadge } from "@/components/admin/AccountControls";
 
 export const Route = createFileRoute("/_authenticated/admin/customers/")({
   component: CustomersList,
@@ -23,8 +27,14 @@ type Row = {
 
 function CustomersList() {
   const [q, setQ] = useState("");
-  const { data: customers = [], isLoading } = useQuery({
+  const { isAdmin, loading: sessionLoading } = useSessionUser();
+  const queryClient = useQueryClient();
+  const fetchAccounts = useServerFn(listCustomerAccounts);
+  const removeCustomer = useServerFn(purgeCustomer);
+
+  const basic = useQuery({
     queryKey: ["admin", "customers"],
+    enabled: !sessionLoading && !isAdmin,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("customers")
@@ -35,21 +45,50 @@ function CustomersList() {
     },
   });
 
+  const accounts = useQuery({
+    queryKey: ["admin", "customer-accounts"],
+    enabled: !sessionLoading && isAdmin,
+    queryFn: () => fetchAccounts(),
+  });
+
+  const isLoading = sessionLoading || (isAdmin ? accounts.isLoading : basic.isLoading);
+  const rows = useMemo(
+    () =>
+      (isAdmin ? accounts.data ?? [] : (basic.data ?? []).map((c) => ({ ...c, user_id: null, order_count: 0, status: "none" as const }))) as Array<
+        Row & { user_id: string | null; order_count: number; status: "active" | "disabled" | "none" }
+      >,
+    [isAdmin, accounts.data, basic.data],
+  );
+
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    if (!needle) return customers;
-    return customers.filter((c) =>
+    if (!needle) return rows;
+    return rows.filter((c) =>
       [c.first_name, c.last_name, c.email, c.phone, c.city, c.precinct]
         .filter(Boolean)
         .join(" ")
         .toLowerCase()
         .includes(needle),
     );
-  }, [customers, q]);
+  }, [rows, q]);
+
+  async function refresh() {
+    await queryClient.invalidateQueries({ queryKey: ["admin", "customer-accounts"] });
+    await queryClient.invalidateQueries({ queryKey: ["admin", "customers"] });
+  }
+
+  const colCount = isAdmin ? 6 : 5;
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold text-foreground">Customers</h1>
+      <div>
+        <h1 className="text-xl font-semibold text-foreground">Customers</h1>
+        {isAdmin && (
+          <p className="mt-1 text-sm text-muted-foreground">
+            Manage customer logins. Disabling blocks sign-in but keeps cases, orders and receipts.
+          </p>
+        )}
+      </div>
 
       <div className="relative max-w-sm">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -62,27 +101,35 @@ function CustomersList() {
       </div>
 
       <div className="overflow-x-auto rounded-2xl border border-border bg-card">
-        <table className="w-full text-left text-sm">
+        <table className="w-full min-w-[44rem] text-left text-sm">
           <thead className="border-b border-border bg-secondary/50 text-xs uppercase tracking-wide text-muted-foreground">
             <tr>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Contact</th>
               <th className="px-4 py-3">City / Precinct</th>
-              <th className="px-4 py-3">Source</th>
+              {isAdmin ? (
+                <>
+                  <th className="px-4 py-3">Account</th>
+                  <th className="px-4 py-3">Orders</th>
+                </>
+              ) : (
+                <th className="px-4 py-3">Source</th>
+              )}
               <th className="px-4 py-3">Created</th>
+              {isAdmin && <th className="px-4 py-3 text-right">Manage</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-border/60">
             {isLoading && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-muted-foreground">
+                <td colSpan={colCount + 1} className="px-4 py-6 text-muted-foreground">
                   Loading…
                 </td>
               </tr>
             )}
             {!isLoading && filtered.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-muted-foreground">
+                <td colSpan={colCount + 1} className="px-4 py-6 text-muted-foreground">
                   No customers found.
                 </td>
               </tr>
@@ -105,8 +152,34 @@ function CustomersList() {
                 <td className="px-4 py-3 text-muted-foreground">
                   {[c.city, c.precinct].filter(Boolean).join(" · ") || "—"}
                 </td>
-                <td className="px-4 py-3 text-muted-foreground">{titleize(c.source)}</td>
+                {isAdmin ? (
+                  <>
+                    <td className="px-4 py-3">
+                      <StatusBadge status={c.status} />
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{c.order_count}</td>
+                  </>
+                ) : (
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {titleize((c as unknown as Row).source ?? "")}
+                  </td>
+                )}
                 <td className="px-4 py-3 text-muted-foreground">{formatDate(c.created_at)}</td>
+                {isAdmin && (
+                  <td className="px-4 py-3 text-right">
+                    <AccountControls
+                      userId={c.user_id}
+                      email={c.email}
+                      status={c.status}
+                      name={`${c.first_name} ${c.last_name}`}
+                      purgeWarning="Their login, case, orders, payment receipts and court-filing history are deleted for good."
+                      onPurge={async () => {
+                        await removeCustomer({ data: { customerId: c.id } });
+                      }}
+                      onChanged={refresh}
+                    />
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
