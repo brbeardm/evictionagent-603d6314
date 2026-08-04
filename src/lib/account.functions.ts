@@ -98,6 +98,17 @@ export const setStaffRole = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await requireAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    if (data.role !== "admin") {
+      const { data: admins, error: adminErr } = await supabaseAdmin
+        .from("profiles")
+        .select("id")
+        .eq("role", "admin");
+      if (adminErr) throw new Error(adminErr.message);
+      const remaining = (admins ?? []).filter((a) => a.id !== data.id);
+      if (remaining.length === 0) throw new Error("There must be at least one admin.");
+    }
+
     const { error } = await supabaseAdmin
       .from("profiles")
       .update({ role: data.role })
