@@ -1,13 +1,136 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Gavel, Truck } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
+import { ArrowLeft, Gavel, Pencil, Truck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { CaseEventsPanel } from "@/components/CaseEventsPanel";
+import { updateCustomerByStaff } from "@/lib/account.functions";
 import { formatDate, money, titleize } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/admin/customers/$id")({
   component: CustomerDetail,
 });
+
+const inputClass =
+  "w-full rounded-lg border border-input bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-ring/30";
+
+type CustomerForm = {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  zip: string;
+  precinct: string;
+};
+
+function toForm(c: Record<string, string | null>): CustomerForm {
+  return {
+    first_name: c["first_name"] ?? "",
+    last_name: c["last_name"] ?? "",
+    email: c["email"] ?? "",
+    phone: c["phone"] ?? "",
+    address: c["address"] ?? "",
+    city: c["city"] ?? "",
+    zip: c["zip"] ?? "",
+    precinct: c["precinct"] ?? "",
+  };
+}
+
+function CustomerEditForm({
+  customerId,
+  initial,
+  onDone,
+}: {
+  customerId: string;
+  initial: CustomerForm;
+  onDone: () => void;
+}) {
+  const queryClient = useQueryClient();
+  const save = useServerFn(updateCustomerByStaff);
+  const [form, setForm] = useState<CustomerForm>(initial);
+  const [busy, setBusy] = useState(false);
+
+  const set = (k: keyof CustomerForm) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      await save({ data: { customerId, ...form } });
+      await queryClient.invalidateQueries({ queryKey: ["admin", "customer", customerId] });
+      toast.success("Customer details saved");
+      onDone();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not save");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <FormField label="First name">
+          <input className={inputClass} value={form.first_name} onChange={set("first_name")} required />
+        </FormField>
+        <FormField label="Last name">
+          <input className={inputClass} value={form.last_name} onChange={set("last_name")} required />
+        </FormField>
+        <FormField label="Email">
+          <input type="email" className={inputClass} value={form.email} onChange={set("email")} required />
+        </FormField>
+        <FormField label="Phone">
+          <input className={inputClass} value={form.phone} onChange={set("phone")} />
+        </FormField>
+        <div className="sm:col-span-2">
+          <FormField label="Street address">
+            <input className={inputClass} value={form.address} onChange={set("address")} />
+          </FormField>
+        </div>
+        <FormField label="City">
+          <input className={inputClass} value={form.city} onChange={set("city")} />
+        </FormField>
+        <FormField label="ZIP">
+          <input className={inputClass} value={form.zip} onChange={set("zip")} />
+        </FormField>
+        <FormField label="Precinct">
+          <input className={inputClass} value={form.precinct} onChange={set("precinct")} />
+        </FormField>
+      </div>
+      <div className="flex gap-2">
+        <button
+          type="submit"
+          disabled={busy}
+          className="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+        >
+          {busy ? "Saving…" : "Save changes"}
+        </button>
+        <button
+          type="button"
+          onClick={onDone}
+          className="rounded-lg border border-border px-5 py-2 text-sm font-medium text-foreground hover:bg-secondary"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function FormField({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="mb-1 block text-xs font-medium text-muted-foreground">{label}</span>
+      {children}
+    </label>
+  );
+}
+
 
 type CaseRow = {
   id: string;
