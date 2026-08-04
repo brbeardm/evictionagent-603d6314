@@ -15,10 +15,13 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as StartRouteImport } from './routes/start'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedPortalRouteImport } from './routes/_authenticated/portal'
 import { Route as ServicesSlugRouteImport } from './routes/services.$slug'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminNewRouteImport } from './routes/_authenticated/admin.new'
 import { Route as AuthenticatedAdminPipelineRouteImport } from './routes/_authenticated/admin.pipeline'
+import { Route as AuthenticatedPortalIndexRouteImport } from './routes/_authenticated/portal.index'
+import { Route as AuthenticatedPortalProfileRouteImport } from './routes/_authenticated/portal.profile'
 import { Route as AuthenticatedAdminCustomersIndexRouteImport } from './routes/_authenticated/admin.customers.index'
 import { Route as AuthenticatedAdminCustomersIdRouteImport } from './routes/_authenticated/admin.customers.$id'
 
@@ -51,6 +54,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPortalRoute = AuthenticatedPortalRouteImport.update({
+  id: '/portal',
+  path: '/portal',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const ServicesSlugRoute = ServicesSlugRouteImport.update({
   id: '/services/$slug',
   path: '/services/$slug',
@@ -72,6 +80,18 @@ const AuthenticatedAdminPipelineRoute =
     path: '/pipeline',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedPortalIndexRoute =
+  AuthenticatedPortalIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedPortalRoute,
+  } as any)
+const AuthenticatedPortalProfileRoute =
+  AuthenticatedPortalProfileRouteImport.update({
+    id: '/profile',
+    path: '/profile',
+    getParentRoute: () => AuthenticatedPortalRoute,
+  } as any)
 const AuthenticatedAdminCustomersIndexRoute =
   AuthenticatedAdminCustomersIndexRouteImport.update({
     id: '/customers/',
@@ -91,10 +111,13 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/start': typeof StartRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/portal': typeof AuthenticatedPortalRouteWithChildren
   '/services/$slug': typeof ServicesSlugRoute
   '/admin/new': typeof AuthenticatedAdminNewRoute
   '/admin/pipeline': typeof AuthenticatedAdminPipelineRoute
+  '/portal/profile': typeof AuthenticatedPortalProfileRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/portal/': typeof AuthenticatedPortalIndexRoute
   '/admin/customers/$id': typeof AuthenticatedAdminCustomersIdRoute
   '/admin/customers/': typeof AuthenticatedAdminCustomersIndexRoute
 }
@@ -106,7 +129,9 @@ export interface FileRoutesByTo {
   '/services/$slug': typeof ServicesSlugRoute
   '/admin/new': typeof AuthenticatedAdminNewRoute
   '/admin/pipeline': typeof AuthenticatedAdminPipelineRoute
+  '/portal/profile': typeof AuthenticatedPortalProfileRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/portal': typeof AuthenticatedPortalIndexRoute
   '/admin/customers/$id': typeof AuthenticatedAdminCustomersIdRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersIndexRoute
 }
@@ -118,10 +143,13 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/start': typeof StartRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/portal': typeof AuthenticatedPortalRouteWithChildren
   '/services/$slug': typeof ServicesSlugRoute
   '/_authenticated/admin/new': typeof AuthenticatedAdminNewRoute
   '/_authenticated/admin/pipeline': typeof AuthenticatedAdminPipelineRoute
+  '/_authenticated/portal/profile': typeof AuthenticatedPortalProfileRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/portal/': typeof AuthenticatedPortalIndexRoute
   '/_authenticated/admin/customers/$id': typeof AuthenticatedAdminCustomersIdRoute
   '/_authenticated/admin/customers/': typeof AuthenticatedAdminCustomersIndexRoute
 }
@@ -133,10 +161,13 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/start'
     | '/admin'
+    | '/portal'
     | '/services/$slug'
     | '/admin/new'
     | '/admin/pipeline'
+    | '/portal/profile'
     | '/admin/'
+    | '/portal/'
     | '/admin/customers/$id'
     | '/admin/customers/'
   fileRoutesByTo: FileRoutesByTo
@@ -148,7 +179,9 @@ export interface FileRouteTypes {
     | '/services/$slug'
     | '/admin/new'
     | '/admin/pipeline'
+    | '/portal/profile'
     | '/admin'
+    | '/portal'
     | '/admin/customers/$id'
     | '/admin/customers'
   id:
@@ -159,10 +192,13 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/start'
     | '/_authenticated/admin'
+    | '/_authenticated/portal'
     | '/services/$slug'
     | '/_authenticated/admin/new'
     | '/_authenticated/admin/pipeline'
+    | '/_authenticated/portal/profile'
     | '/_authenticated/admin/'
+    | '/_authenticated/portal/'
     | '/_authenticated/admin/customers/$id'
     | '/_authenticated/admin/customers/'
   fileRoutesById: FileRoutesById
@@ -220,6 +256,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/portal': {
+      id: '/_authenticated/portal'
+      path: '/portal'
+      fullPath: '/portal'
+      preLoaderRoute: typeof AuthenticatedPortalRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/services/$slug': {
       id: '/services/$slug'
       path: '/services/$slug'
@@ -247,6 +290,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/pipeline'
       preLoaderRoute: typeof AuthenticatedAdminPipelineRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/portal/': {
+      id: '/_authenticated/portal/'
+      path: '/'
+      fullPath: '/portal/'
+      preLoaderRoute: typeof AuthenticatedPortalIndexRouteImport
+      parentRoute: typeof AuthenticatedPortalRoute
+    }
+    '/_authenticated/portal/profile': {
+      id: '/_authenticated/portal/profile'
+      path: '/profile'
+      fullPath: '/portal/profile'
+      preLoaderRoute: typeof AuthenticatedPortalProfileRouteImport
+      parentRoute: typeof AuthenticatedPortalRoute
     }
     '/_authenticated/admin/customers/': {
       id: '/_authenticated/admin/customers/'
@@ -284,12 +341,27 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
 const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
+interface AuthenticatedPortalRouteChildren {
+  AuthenticatedPortalProfileRoute: typeof AuthenticatedPortalProfileRoute
+  AuthenticatedPortalIndexRoute: typeof AuthenticatedPortalIndexRoute
+}
+
+const AuthenticatedPortalRouteChildren: AuthenticatedPortalRouteChildren = {
+  AuthenticatedPortalProfileRoute: AuthenticatedPortalProfileRoute,
+  AuthenticatedPortalIndexRoute: AuthenticatedPortalIndexRoute,
+}
+
+const AuthenticatedPortalRouteWithChildren =
+  AuthenticatedPortalRoute._addFileChildren(AuthenticatedPortalRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+  AuthenticatedPortalRoute: typeof AuthenticatedPortalRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+  AuthenticatedPortalRoute: AuthenticatedPortalRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =
