@@ -158,6 +158,9 @@ type OrderRow = {
 
 function CustomerDetail() {
   const { id } = Route.useParams();
+  const [editing, setEditing] = useState(false);
+
+
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin", "customer", id],
