@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, CalendarClock, Gavel, Truck } from "lucide-react";
+import { ArrowLeft, Gavel, Truck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { CaseEventsPanel } from "@/components/CaseEventsPanel";
 import { formatDate, money, titleize } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/admin/customers/$id")({
@@ -22,14 +23,6 @@ type CaseRow = {
   notes: string | null;
 };
 
-type EventRow = {
-  id: string;
-  event_type: string;
-  title: string;
-  due_date: string | null;
-  completed_at: string | null;
-  next_step: string | null;
-};
 
 type OrderRow = {
   id: string;
@@ -61,25 +54,15 @@ function CustomerDetail() {
 
       const caseRow = ((cases ?? [])[0] ?? null) as CaseRow | null;
 
-      const [events, orders] = await Promise.all([
-        caseRow
-          ? supabase
-              .from("case_events")
-              .select("id, event_type, title, due_date, completed_at, next_step")
-              .eq("case_id", caseRow.id)
-              .order("due_date", { ascending: true })
-          : Promise.resolve({ data: [] as EventRow[] }),
-        supabase
-          .from("orders")
-          .select("id, amount_cents, payment_status, disposition, created_at, services(name)")
-          .eq("customer_id", id)
-          .order("created_at", { ascending: false }),
-      ]);
+      const orders = await supabase
+        .from("orders")
+        .select("id, amount_cents, payment_status, disposition, created_at, services(name)")
+        .eq("customer_id", id)
+        .order("created_at", { ascending: false });
 
       return {
         customer,
         caseRow,
-        events: (events.data ?? []) as EventRow[],
         orders: (orders.data ?? []) as OrderRow[],
       };
     },
@@ -155,32 +138,8 @@ function CustomerDetail() {
         )}
       </section>
 
-      <section className="rounded-2xl border border-border bg-card p-5">
-        <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
-          <CalendarClock className="h-4 w-4 text-primary" /> Case events
-        </h2>
-        {data.events.length === 0 ? (
-          <p className="mt-3 text-sm text-muted-foreground">No events recorded yet.</p>
-        ) : (
-          <ul className="mt-3 divide-y divide-border/60">
-            {data.events.map((e) => (
-              <li key={e.id} className="py-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-sm font-medium text-foreground">{e.title}</p>
-                  <span className="text-sm text-muted-foreground">{formatDate(e.due_date)}</span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {titleize(e.event_type)} ·{" "}
-                  {e.completed_at ? `Completed ${formatDate(e.completed_at)}` : "Open"}
-                </p>
-                {e.next_step && (
-                  <p className="mt-1 text-sm text-muted-foreground">Next step: {e.next_step}</p>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      {k && <CaseEventsPanel caseId={k.id} />}
+
 
       <section className="rounded-2xl border border-border bg-card p-5">
         <h2 className="text-sm font-semibold text-foreground">Orders</h2>

@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       case_events: {
         Row: {
+          auto_generated: boolean
           case_id: string
           completed_at: string | null
           created_at: string
@@ -27,6 +28,7 @@ export type Database = {
           title: string
         }
         Insert: {
+          auto_generated?: boolean
           case_id: string
           completed_at?: string | null
           created_at?: string
@@ -38,6 +40,7 @@ export type Database = {
           title: string
         }
         Update: {
+          auto_generated?: boolean
           case_id?: string
           completed_at?: string | null
           created_at?: string
@@ -287,6 +290,12 @@ export type Database = {
     }
     Functions: {
       is_staff: { Args: never; Returns: boolean }
+      is_tx_court_holiday: { Args: { d: string }; Returns: boolean }
+      next_business_day: { Args: { d: string }; Returns: string }
+      regenerate_case_events: {
+        Args: { p_case_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "staff"
