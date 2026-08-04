@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { money, stageLabel, type PublicService } from "@/lib/format";
 import { submitIntake, submitManualIntake } from "@/lib/intake.functions";
+import { CreateAccountPanel } from "@/components/CreateAccountPanel";
+
 
 type Form = {
   first_name: string;
