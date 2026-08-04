@@ -1,22 +1,18 @@
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { KanbanSquare, LayoutDashboard, LogOut, PlusCircle, Users, UsersRound } from "lucide-react";
+import { LogOut, ShoppingBag, UserRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/_authenticated/admin")({
-  component: AdminLayout,
+export const Route = createFileRoute("/_authenticated/portal")({
+  component: PortalLayout,
 });
 
 const links = [
-  { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/admin/pipeline", label: "Pipeline", icon: KanbanSquare, exact: false },
-  { to: "/admin/customers", label: "Customers", icon: Users, exact: false },
-  { to: "/admin/new", label: "New Entry", icon: PlusCircle, exact: false },
-  { to: "/admin/team", label: "Team", icon: UsersRound, exact: false },
+  { to: "/portal", label: "My Orders", icon: ShoppingBag, exact: true },
+  { to: "/portal/profile", label: "Profile", icon: UserRound, exact: false },
 ] as const;
 
-
-function AdminLayout() {
+function PortalLayout() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -24,27 +20,27 @@ function AdminLayout() {
     await queryClient.cancelQueries();
     queryClient.clear();
     await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
+    navigate({ to: "/", replace: true });
   }
 
   return (
     <div className="min-h-screen bg-secondary/30">
       <header className="border-b border-border bg-card">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3">
-          <Link to="/admin" className="flex items-center gap-2">
+        <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3 px-4 py-3">
+          <Link to="/" className="flex items-center gap-2">
             <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-xs font-bold text-primary-foreground">
               EA
             </span>
-            <span className="text-sm font-semibold text-foreground">Staff Console</span>
+            <span className="text-sm font-semibold text-foreground">Your case</span>
           </Link>
           <button
-            onClick={signOut}
+            onClick={() => void signOut()}
             className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-foreground hover:bg-secondary"
           >
-            <LogOut className="h-4 w-4" /> Sign out
+            <LogOut className="h-4 w-4" /> Log out
           </button>
         </div>
-        <nav className="mx-auto flex w-full max-w-6xl gap-1 overflow-x-auto px-2 pb-2">
+        <nav className="mx-auto flex w-full max-w-3xl gap-1 overflow-x-auto px-2 pb-2">
           {links.map(({ to, label, icon: Icon, exact }) => (
             <Link
               key={to}
@@ -58,7 +54,7 @@ function AdminLayout() {
           ))}
         </nav>
       </header>
-      <main className="mx-auto w-full max-w-6xl px-4 py-6">
+      <main className="mx-auto w-full max-w-3xl px-4 py-6">
         <Outlet />
       </main>
     </div>

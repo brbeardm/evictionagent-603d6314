@@ -1,5 +1,80 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
+import { ChevronDown, LogOut, ShieldCheck, ShoppingBag, UserRound } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { supabase } from "@/integrations/supabase/client";
+import { useSessionUser } from "@/hooks/useSessionUser";
+
+function AccountMenu() {
+  const { loading, user, isStaff, displayName } = useSessionUser();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  async function signOut() {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/", replace: true });
+  }
+
+  if (loading) return <span className="h-8 w-20" />;
+
+  if (!user) {
+    return (
+      <Link
+        to="/auth"
+        className="rounded-md border border-border px-3 py-2 font-medium text-foreground transition-colors hover:bg-secondary"
+      >
+        Log in
+      </Link>
+    );
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger className="inline-flex max-w-[10rem] items-center gap-1.5 rounded-md border border-border px-3 py-2 font-medium text-foreground transition-colors hover:bg-secondary sm:max-w-[16rem]">
+        <UserRound className="h-4 w-4 shrink-0" />
+        <span className="truncate">{displayName}</span>
+        <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-60" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel className="truncate font-normal text-muted-foreground">
+          {user.email}
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link to="/portal/profile">
+            <UserRound className="mr-2 h-4 w-4" /> Profile
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/portal">
+            <ShoppingBag className="mr-2 h-4 w-4" /> My Orders
+          </Link>
+        </DropdownMenuItem>
+        {isStaff && (
+          <DropdownMenuItem asChild>
+            <Link to="/admin">
+              <ShieldCheck className="mr-2 h-4 w-4" /> Staff Console
+            </Link>
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={() => void signOut()}>
+          <LogOut className="mr-2 h-4 w-4" /> Log out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 export function PublicLayout({ children }: { children: ReactNode }) {
   return (
@@ -21,6 +96,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
             >
               Get started
             </Link>
+            <AccountMenu />
           </nav>
         </div>
       </header>
@@ -44,7 +120,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
               Start intake
             </Link>
             <Link to="/auth" className="hover:text-foreground">
-              Staff login
+              Log in
             </Link>
           </div>
         </div>

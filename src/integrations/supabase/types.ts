@@ -137,6 +137,7 @@ export type Database = {
           phone: string | null
           precinct: string | null
           source: Database["public"]["Enums"]["customer_source"]
+          user_id: string | null
           zip: string | null
         }
         Insert: {
@@ -151,6 +152,7 @@ export type Database = {
           phone?: string | null
           precinct?: string | null
           source?: Database["public"]["Enums"]["customer_source"]
+          user_id?: string | null
           zip?: string | null
         }
         Update: {
@@ -165,6 +167,7 @@ export type Database = {
           phone?: string | null
           precinct?: string | null
           source?: Database["public"]["Enums"]["customer_source"]
+          user_id?: string | null
           zip?: string | null
         }
         Relationships: []
@@ -291,6 +294,7 @@ export type Database = {
     Functions: {
       is_staff: { Args: never; Returns: boolean }
       is_tx_court_holiday: { Args: { d: string }; Returns: boolean }
+      my_customer_ids: { Args: never; Returns: string[] }
       next_business_day: { Args: { d: string }; Returns: string }
       regenerate_case_events: {
         Args: { p_case_id: string }
