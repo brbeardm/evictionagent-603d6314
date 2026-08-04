@@ -54,25 +54,15 @@ function CustomerDetail() {
 
       const caseRow = ((cases ?? [])[0] ?? null) as CaseRow | null;
 
-      const [events, orders] = await Promise.all([
-        caseRow
-          ? supabase
-              .from("case_events")
-              .select("id, event_type, title, due_date, completed_at, next_step")
-              .eq("case_id", caseRow.id)
-              .order("due_date", { ascending: true })
-          : Promise.resolve({ data: [] as EventRow[] }),
-        supabase
-          .from("orders")
-          .select("id, amount_cents, payment_status, disposition, created_at, services(name)")
-          .eq("customer_id", id)
-          .order("created_at", { ascending: false }),
-      ]);
+      const orders = await supabase
+        .from("orders")
+        .select("id, amount_cents, payment_status, disposition, created_at, services(name)")
+        .eq("customer_id", id)
+        .order("created_at", { ascending: false });
 
       return {
         customer,
         caseRow,
-        events: (events.data ?? []) as EventRow[],
         orders: (orders.data ?? []) as OrderRow[],
       };
     },
