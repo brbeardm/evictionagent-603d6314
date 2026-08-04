@@ -23,14 +23,6 @@ type CaseRow = {
   notes: string | null;
 };
 
-type EventRow = {
-  id: string;
-  event_type: string;
-  title: string;
-  due_date: string | null;
-  completed_at: string | null;
-  next_step: string | null;
-};
 
 type OrderRow = {
   id: string;
