@@ -42,7 +42,7 @@ async function stripeRequest<T>(
       Authorization: `Bearer ${secretKey()}`,
       "Content-Type": "application/x-www-form-urlencoded",
     },
-    body: init.body ? encodeForm(init.body).join("&") : undefined,
+    body: init.body ? encodeForm(init.body).join("&") : null,
   });
   const payload = (await res.json()) as { error?: { message?: string } };
   if (!res.ok) {
