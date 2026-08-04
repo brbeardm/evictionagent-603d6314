@@ -1,15 +1,28 @@
 import { createFileRoute, Link, Outlet, redirect, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  ChevronDown,
+  Globe,
   KanbanSquare,
   LayoutDashboard,
   LogOut,
   PlusCircle,
   ReceiptText,
+  UserRound,
   Users,
   UsersRound,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useSessionUser } from "@/hooks/useSessionUser";
 import { supabase } from "@/integrations/supabase/client";
+
 
 export const Route = createFileRoute("/_authenticated/admin")({
   beforeLoad: async () => {
