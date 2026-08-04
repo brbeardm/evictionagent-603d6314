@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { money, stageLabel, type PublicService } from "@/lib/format";
 import { submitIntake, submitManualIntake, submitCustomerIntake } from "@/lib/intake.functions";
-import { CreateAccountPanel } from "@/components/CreateAccountPanel";
+import { EmbeddedCheckoutPanel } from "@/components/EmbeddedCheckoutPanel";
 import { useSessionUser } from "@/hooks/useSessionUser";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -59,7 +58,7 @@ export function IntakeWizard({
   );
   const [form, setForm] = useState<Form>(empty);
   const [saving, setSaving] = useState(false);
-  const [done, setDone] = useState<{ customerId: string; email: string } | null>(null);
+  const [done, setDone] = useState<{ orderId: string } | null>(null);
 
   const { user, isStaff } = useSessionUser();
   const isCustomer = mode === "web" && Boolean(user) && !isStaff;
