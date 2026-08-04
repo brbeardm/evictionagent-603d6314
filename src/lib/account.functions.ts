@@ -138,12 +138,20 @@ export const addStaffByEmail = createServerFn({ method: "POST" })
       throw new Error("Ask them to create an account first, then add them here.");
     }
 
+    const { data: existing, error: existingErr } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .eq("id", match.id)
+      .maybeSingle();
+    if (existingErr) throw new Error(existingErr.message);
+    if (existing) return { ok: true, message: "Already on the team." };
+
     const fullName =
       (match.user_metadata?.["full_name"] as string | undefined) || match.email || "Staff member";
 
     const { error } = await supabaseAdmin
       .from("profiles")
-      .upsert({ id: match.id, full_name: fullName, role: "staff" }, { onConflict: "id" });
+      .insert({ id: match.id, full_name: fullName, role: "staff" });
     if (error) throw new Error(error.message);
-    return { ok: true };
+    return { ok: true, message: "Staff member added" };
   });
