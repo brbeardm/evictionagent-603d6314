@@ -19,6 +19,7 @@ import { Route as AuthenticatedPortalRouteImport } from './routes/_authenticated
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as ServicesSlugRouteImport } from './routes/services.$slug'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminAccountRouteImport } from './routes/_authenticated/admin.account'
 import { Route as AuthenticatedAdminIncompleteRouteImport } from './routes/_authenticated/admin.incomplete'
 import { Route as AuthenticatedAdminNewRouteImport } from './routes/_authenticated/admin.new'
 import { Route as AuthenticatedAdminPipelineRouteImport } from './routes/_authenticated/admin.pipeline'
@@ -78,6 +79,12 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminAccountRoute =
+  AuthenticatedAdminAccountRouteImport.update({
+    id: '/account',
+    path: '/account',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminIncompleteRoute =
   AuthenticatedAdminIncompleteRouteImport.update({
     id: '/incomplete',
@@ -139,6 +146,7 @@ export interface FileRoutesByFullPath {
   '/portal': typeof AuthenticatedPortalRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/services/$slug': typeof ServicesSlugRoute
+  '/admin/account': typeof AuthenticatedAdminAccountRoute
   '/admin/incomplete': typeof AuthenticatedAdminIncompleteRoute
   '/admin/new': typeof AuthenticatedAdminNewRoute
   '/admin/pipeline': typeof AuthenticatedAdminPipelineRoute
@@ -157,6 +165,7 @@ export interface FileRoutesByTo {
   '/start': typeof StartRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/services/$slug': typeof ServicesSlugRoute
+  '/admin/account': typeof AuthenticatedAdminAccountRoute
   '/admin/incomplete': typeof AuthenticatedAdminIncompleteRoute
   '/admin/new': typeof AuthenticatedAdminNewRoute
   '/admin/pipeline': typeof AuthenticatedAdminPipelineRoute
@@ -179,6 +188,7 @@ export interface FileRoutesById {
   '/_authenticated/portal': typeof AuthenticatedPortalRouteWithChildren
   '/checkout/return': typeof CheckoutReturnRoute
   '/services/$slug': typeof ServicesSlugRoute
+  '/_authenticated/admin/account': typeof AuthenticatedAdminAccountRoute
   '/_authenticated/admin/incomplete': typeof AuthenticatedAdminIncompleteRoute
   '/_authenticated/admin/new': typeof AuthenticatedAdminNewRoute
   '/_authenticated/admin/pipeline': typeof AuthenticatedAdminPipelineRoute
@@ -201,6 +211,7 @@ export interface FileRouteTypes {
     | '/portal'
     | '/checkout/return'
     | '/services/$slug'
+    | '/admin/account'
     | '/admin/incomplete'
     | '/admin/new'
     | '/admin/pipeline'
@@ -219,6 +230,7 @@ export interface FileRouteTypes {
     | '/start'
     | '/checkout/return'
     | '/services/$slug'
+    | '/admin/account'
     | '/admin/incomplete'
     | '/admin/new'
     | '/admin/pipeline'
@@ -240,6 +252,7 @@ export interface FileRouteTypes {
     | '/_authenticated/portal'
     | '/checkout/return'
     | '/services/$slug'
+    | '/_authenticated/admin/account'
     | '/_authenticated/admin/incomplete'
     | '/_authenticated/admin/new'
     | '/_authenticated/admin/pipeline'
@@ -335,6 +348,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/account': {
+      id: '/_authenticated/admin/account'
+      path: '/account'
+      fullPath: '/admin/account'
+      preLoaderRoute: typeof AuthenticatedAdminAccountRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/incomplete': {
       id: '/_authenticated/admin/incomplete'
       path: '/incomplete'
@@ -402,6 +422,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminAccountRoute: typeof AuthenticatedAdminAccountRoute
   AuthenticatedAdminIncompleteRoute: typeof AuthenticatedAdminIncompleteRoute
   AuthenticatedAdminNewRoute: typeof AuthenticatedAdminNewRoute
   AuthenticatedAdminPipelineRoute: typeof AuthenticatedAdminPipelineRoute
@@ -412,6 +433,7 @@ interface AuthenticatedAdminRouteChildren {
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminAccountRoute: AuthenticatedAdminAccountRoute,
   AuthenticatedAdminIncompleteRoute: AuthenticatedAdminIncompleteRoute,
   AuthenticatedAdminNewRoute: AuthenticatedAdminNewRoute,
   AuthenticatedAdminPipelineRoute: AuthenticatedAdminPipelineRoute,
