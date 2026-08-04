@@ -3,11 +3,11 @@ import { useState } from "react";
 import { CalendarClock, FileCheck2, ShieldCheck } from "lucide-react";
 import { PublicLayout } from "@/components/PublicLayout";
 import { ServiceCard } from "@/components/ServiceCard";
-import { STAGES } from "@/lib/format";
+import { STAGES, type PublicService } from "@/lib/format";
 import { listServices } from "@/lib/public.functions";
 
 export const Route = createFileRoute("/")({
-  loader: () => listServices(),
+  loader: async () => (await listServices()) as PublicService[],
   head: () => ({
     meta: [
       { title: "EvictionAgent — Harris County Eviction Help & Filing Services" },

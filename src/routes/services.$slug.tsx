@@ -1,12 +1,12 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { PublicLayout } from "@/components/PublicLayout";
-import { money, stageLabel } from "@/lib/format";
+import { money, stageLabel, type PublicService } from "@/lib/format";
 import { getServiceBySlug } from "@/lib/public.functions";
 
 export const Route = createFileRoute("/services/$slug")({
   loader: async ({ params }) => {
-    const service = await getServiceBySlug({ data: { slug: params.slug } });
+    const service = (await getServiceBySlug({ data: { slug: params.slug } })) as PublicService | null;
     if (!service) throw notFound();
     return { service };
   },

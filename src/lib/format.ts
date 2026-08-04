@@ -50,3 +50,14 @@ export const formatDate = (d: string | null | undefined) =>
         year: "numeric",
       })
     : "—";
+
+export type PublicService = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  stage: string;
+  texas_authority: string;
+  price_cents: number;
+  sort_order: number;
+};
