@@ -14,16 +14,303 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      case_events: {
+        Row: {
+          case_id: string
+          completed_at: string | null
+          created_at: string
+          due_date: string | null
+          event_type: Database["public"]["Enums"]["case_event_type"]
+          id: string
+          next_step: string | null
+          order_id: string | null
+          title: string
+        }
+        Insert: {
+          case_id: string
+          completed_at?: string | null
+          created_at?: string
+          due_date?: string | null
+          event_type?: Database["public"]["Enums"]["case_event_type"]
+          id?: string
+          next_step?: string | null
+          order_id?: string | null
+          title: string
+        }
+        Update: {
+          case_id?: string
+          completed_at?: string | null
+          created_at?: string
+          due_date?: string | null
+          event_type?: Database["public"]["Enums"]["case_event_type"]
+          id?: string
+          next_step?: string | null
+          order_id?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_events_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cases: {
+        Row: {
+          appeal_deadline: string | null
+          cause_number: string | null
+          court_precinct: string | null
+          created_at: string
+          customer_id: string
+          filing_date: string | null
+          id: string
+          judgment_date: string | null
+          judgment_result: Database["public"]["Enums"]["judgment_result"]
+          notes: string | null
+          stage: Database["public"]["Enums"]["case_stage"]
+          trial_date: string | null
+          writ_earliest: string | null
+        }
+        Insert: {
+          appeal_deadline?: string | null
+          cause_number?: string | null
+          court_precinct?: string | null
+          created_at?: string
+          customer_id: string
+          filing_date?: string | null
+          id?: string
+          judgment_date?: string | null
+          judgment_result?: Database["public"]["Enums"]["judgment_result"]
+          notes?: string | null
+          stage?: Database["public"]["Enums"]["case_stage"]
+          trial_date?: string | null
+          writ_earliest?: string | null
+        }
+        Update: {
+          appeal_deadline?: string | null
+          cause_number?: string | null
+          court_precinct?: string | null
+          created_at?: string
+          customer_id?: string
+          filing_date?: string | null
+          id?: string
+          judgment_date?: string | null
+          judgment_result?: Database["public"]["Enums"]["judgment_result"]
+          notes?: string | null
+          stage?: Database["public"]["Enums"]["case_stage"]
+          trial_date?: string | null
+          writ_earliest?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cases_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string
+          created_by: string | null
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          phone: string | null
+          precinct: string | null
+          source: Database["public"]["Enums"]["customer_source"]
+          zip: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          created_by?: string | null
+          email: string
+          first_name: string
+          id?: string
+          last_name: string
+          phone?: string | null
+          precinct?: string | null
+          source?: Database["public"]["Enums"]["customer_source"]
+          zip?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          phone?: string | null
+          precinct?: string | null
+          source?: Database["public"]["Enums"]["customer_source"]
+          zip?: string | null
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          amount_cents: number
+          assigned_to: string | null
+          case_id: string | null
+          created_at: string
+          customer_id: string
+          disposition: Database["public"]["Enums"]["order_disposition"]
+          id: string
+          payment_status: Database["public"]["Enums"]["payment_status"]
+          service_id: string
+        }
+        Insert: {
+          amount_cents?: number
+          assigned_to?: string | null
+          case_id?: string | null
+          created_at?: string
+          customer_id: string
+          disposition?: Database["public"]["Enums"]["order_disposition"]
+          id?: string
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          service_id: string
+        }
+        Update: {
+          amount_cents?: number
+          assigned_to?: string | null
+          case_id?: string | null
+          created_at?: string
+          customer_id?: string
+          disposition?: Database["public"]["Enums"]["order_disposition"]
+          id?: string
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          service_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id: string
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: []
+      }
+      services: {
+        Row: {
+          active: boolean
+          description: string
+          id: string
+          name: string
+          price_cents: number
+          slug: string
+          sort_order: number
+          stage: Database["public"]["Enums"]["service_stage"]
+          texas_authority: string
+        }
+        Insert: {
+          active?: boolean
+          description?: string
+          id?: string
+          name: string
+          price_cents?: number
+          slug: string
+          sort_order?: number
+          stage: Database["public"]["Enums"]["service_stage"]
+          texas_authority?: string
+        }
+        Update: {
+          active?: boolean
+          description?: string
+          id?: string
+          name?: string
+          price_cents?: number
+          slug?: string
+          sort_order?: number
+          stage?: Database["public"]["Enums"]["service_stage"]
+          texas_authority?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_staff: { Args: never; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "staff"
+      case_event_type: "deadline" | "task" | "filing" | "note"
+      case_stage:
+        | "pre_trial"
+        | "trial_set"
+        | "judgment"
+        | "appeal"
+        | "move_out"
+        | "closed"
+      customer_source: "web" | "manual"
+      judgment_result: "pending" | "tenant" | "landlord" | "dismissed"
+      order_disposition:
+        | "new"
+        | "intake_review"
+        | "docs_prep"
+        | "awaiting_signature"
+        | "filed"
+        | "negotiating"
+        | "completed"
+        | "cancelled"
+      payment_status: "unpaid" | "paid" | "refunded"
+      service_stage: "pre_trial" | "post_judgment" | "move_out"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +437,31 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "staff"],
+      case_event_type: ["deadline", "task", "filing", "note"],
+      case_stage: [
+        "pre_trial",
+        "trial_set",
+        "judgment",
+        "appeal",
+        "move_out",
+        "closed",
+      ],
+      customer_source: ["web", "manual"],
+      judgment_result: ["pending", "tenant", "landlord", "dismissed"],
+      order_disposition: [
+        "new",
+        "intake_review",
+        "docs_prep",
+        "awaiting_signature",
+        "filed",
+        "negotiating",
+        "completed",
+        "cancelled",
+      ],
+      payment_status: ["unpaid", "paid", "refunded"],
+      service_stage: ["pre_trial", "post_judgment", "move_out"],
+    },
   },
 } as const
