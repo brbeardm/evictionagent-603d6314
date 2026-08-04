@@ -73,7 +73,8 @@ export function createCheckoutSession(params: {
   return stripeRequest<StripeCheckoutSession>("/checkout/sessions", {
     method: "POST",
     body: {
-      ui_mode: "embedded",
+      // Newer Stripe API versions renamed the embedded checkout mode.
+      ui_mode: "embedded_page",
       mode: "payment",
       return_url: params.returnUrl,
       customer_email: params.customerEmail || undefined,
