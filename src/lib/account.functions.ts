@@ -155,3 +155,49 @@ export const addStaffByEmail = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true, message: "Staff member added" };
   });
+
+const staffCustomerSchema = z.object({
+  customerId: z.string().uuid(),
+  first_name: z.string().trim().min(1).max(80),
+  last_name: z.string().trim().min(1).max(80),
+  email: z.string().trim().email().max(255),
+  phone: z.string().trim().max(40).optional().default(""),
+  address: z.string().trim().max(200).optional().default(""),
+  city: z.string().trim().max(80).optional().default(""),
+  zip: z.string().trim().max(12).optional().default(""),
+  precinct: z.string().trim().max(40).optional().default(""),
+});
+
+async function requireStaff(context: { supabase: any; userId: string }) {
+  const { data, error } = await context.supabase
+    .from("profiles")
+    .select("id, role")
+    .eq("id", context.userId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data || !["staff", "admin"].includes(data.role)) throw new Error("Forbidden");
+}
+
+/** Staff/admin update a customer's registration + contact record. */
+export const updateCustomerByStaff = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => staffCustomerSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    await requireStaff(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("customers")
+      .update({
+        first_name: data.first_name,
+        last_name: data.last_name,
+        email: data.email.toLowerCase(),
+        phone: data.phone || null,
+        address: data.address || null,
+        city: data.city || null,
+        zip: data.zip || null,
+        precinct: data.precinct || null,
+      })
+      .eq("id", data.customerId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
