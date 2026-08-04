@@ -14,7 +14,7 @@ export const Route = createFileRoute("/start")({
       {
         name: "description",
         content:
-          "Tell us your Harris County eviction situation in three short steps. No payment required to start.",
+          "Tell us your Harris County eviction situation in three short steps, then pay securely online.",
       },
       { property: "og:title", content: "Start Your Eviction Intake — EvictionAgent" },
       {
@@ -37,7 +37,7 @@ function StartPage() {
           Let's find out how much time you have.
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Three short steps. Nothing is filed and no payment is taken until you approve it.
+          Three short steps, then secure payment. Nothing is filed until you approve it.
         </p>
         <div className="mt-8">
           <IntakeWizard services={services} mode="web" initialServiceSlug={service} />
