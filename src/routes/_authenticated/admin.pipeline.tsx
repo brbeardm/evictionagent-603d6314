@@ -33,6 +33,7 @@ function Pipeline() {
         .select(
           "id, amount_cents, payment_status, disposition, created_at, customer_id, services(name), customers(first_name, last_name)",
         )
+        .eq("payment_status", "paid")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as OrderRow[];
@@ -55,7 +56,7 @@ function Pipeline() {
       <div>
         <h1 className="text-xl font-semibold text-foreground">Pipeline</h1>
         <p className="text-sm text-muted-foreground">
-          Drag a card to a new column to change its disposition.
+          Paid orders only. Drag a card to a new column to change its disposition.
         </p>
       </div>
 

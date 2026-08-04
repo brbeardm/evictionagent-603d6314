@@ -75,17 +75,25 @@ async function createIntake(
     .single();
   if (caseError) throw new Error(caseError.message);
 
-  const { error: orderError } = await supabaseAdmin.from("orders").insert({
-    customer_id: customer.id,
-    case_id: caseRow.id,
-    service_id: service.id,
-    amount_cents: service.price_cents,
-    payment_status: "unpaid",
-    disposition: "new",
-  });
+  const { data: orderRow, error: orderError } = await supabaseAdmin
+    .from("orders")
+    .insert({
+      customer_id: customer.id,
+      case_id: caseRow.id,
+      service_id: service.id,
+      amount_cents: service.price_cents,
+      payment_status: "unpaid",
+      disposition: "new",
+    })
+    .select("id")
+    .single();
   if (orderError) throw new Error(orderError.message);
 
-  return { customerId: customer.id as string, caseId: caseRow.id as string };
+  return {
+    customerId: customer.id as string,
+    caseId: caseRow.id as string,
+    orderId: orderRow.id as string,
+  };
 }
 
 /** Logged-in customer places a new order on their existing customer record. */
@@ -156,17 +164,25 @@ export const submitCustomerIntake = createServerFn({ method: "POST" })
       caseId = caseRow.id;
     }
 
-    const { error: orderError } = await supabaseAdmin.from("orders").insert({
-      customer_id: customer.id,
-      case_id: caseId,
-      service_id: service.id,
-      amount_cents: service.price_cents,
-      payment_status: "unpaid",
-      disposition: "new",
-    });
+    const { data: orderRow, error: orderError } = await supabaseAdmin
+      .from("orders")
+      .insert({
+        customer_id: customer.id,
+        case_id: caseId,
+        service_id: service.id,
+        amount_cents: service.price_cents,
+        payment_status: "unpaid",
+        disposition: "new",
+      })
+      .select("id")
+      .single();
     if (orderError) throw new Error(orderError.message);
 
-    return { customerId: customer.id as string, caseId: caseId as string };
+    return {
+      customerId: customer.id as string,
+      caseId: caseId as string,
+      orderId: orderRow.id as string,
+    };
   });
 
 export const submitIntake = createServerFn({ method: "POST" })

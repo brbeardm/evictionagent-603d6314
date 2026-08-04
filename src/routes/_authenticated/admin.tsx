@@ -1,6 +1,14 @@
 import { createFileRoute, Link, Outlet, redirect, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { KanbanSquare, LayoutDashboard, LogOut, PlusCircle, Users, UsersRound } from "lucide-react";
+import {
+  KanbanSquare,
+  LayoutDashboard,
+  LogOut,
+  PlusCircle,
+  ReceiptText,
+  Users,
+  UsersRound,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -21,6 +29,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 const links = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/pipeline", label: "Pipeline", icon: KanbanSquare, exact: false },
+  { to: "/admin/incomplete", label: "Incomplete", icon: ReceiptText, exact: false },
   { to: "/admin/customers", label: "Customers", icon: Users, exact: false },
   { to: "/admin/new", label: "New Entry", icon: PlusCircle, exact: false },
   { to: "/admin/team", label: "Team", icon: UsersRound, exact: false },
