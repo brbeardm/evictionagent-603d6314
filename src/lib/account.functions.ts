@@ -98,6 +98,17 @@ export const setStaffRole = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await requireAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    if (data.role !== "admin") {
+      const { data: admins, error: adminErr } = await supabaseAdmin
+        .from("profiles")
+        .select("id")
+        .eq("role", "admin");
+      if (adminErr) throw new Error(adminErr.message);
+      const remaining = (admins ?? []).filter((a) => a.id !== data.id);
+      if (remaining.length === 0) throw new Error("There must be at least one admin.");
+    }
+
     const { error } = await supabaseAdmin
       .from("profiles")
       .update({ role: data.role })
@@ -127,12 +138,20 @@ export const addStaffByEmail = createServerFn({ method: "POST" })
       throw new Error("Ask them to create an account first, then add them here.");
     }
 
+    const { data: existing, error: existingErr } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .eq("id", match.id)
+      .maybeSingle();
+    if (existingErr) throw new Error(existingErr.message);
+    if (existing) return { ok: true, message: "Already on the team." };
+
     const fullName =
       (match.user_metadata?.["full_name"] as string | undefined) || match.email || "Staff member";
 
     const { error } = await supabaseAdmin
       .from("profiles")
-      .upsert({ id: match.id, full_name: fullName, role: "staff" }, { onConflict: "id" });
+      .insert({ id: match.id, full_name: fullName, role: "staff" });
     if (error) throw new Error(error.message);
-    return { ok: true };
+    return { ok: true, message: "Staff member added" };
   });

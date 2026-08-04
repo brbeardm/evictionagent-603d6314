@@ -50,8 +50,8 @@ function TeamPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      await addStaff({ data: { email } });
-      toast.success("Staff member added");
+      const res = await addStaff({ data: { email } });
+      toast.success(res?.message ?? "Staff member added");
       setEmail("");
       await refresh();
     } catch (err) {
