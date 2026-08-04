@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { money, stageLabel, type PublicService } from "@/lib/format";
-import { submitIntake, submitManualIntake } from "@/lib/intake.functions";
+import { submitIntake, submitManualIntake, submitCustomerIntake } from "@/lib/intake.functions";
 import { CreateAccountPanel } from "@/components/CreateAccountPanel";
+import { useSessionUser } from "@/hooks/useSessionUser";
+import { supabase } from "@/integrations/supabase/client";
 
 
 type Form = {
@@ -57,8 +61,39 @@ export function IntakeWizard({
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState<{ customerId: string; email: string } | null>(null);
 
+  const { user, isStaff } = useSessionUser();
+  const isCustomer = mode === "web" && Boolean(user) && !isStaff;
+
+  const { data: myCustomer } = useQuery({
+    queryKey: ["intake-my-customer", user?.id],
+    enabled: isCustomer,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("customers")
+        .select("id, first_name, last_name, email, phone, address, city, zip, precinct")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return data;
+    },
+  });
+
+  useEffect(() => {
+    if (!isCustomer) return;
+    setForm((f) => ({
+      ...f,
+      first_name: f.first_name || myCustomer?.first_name || "",
+      last_name: f.last_name || myCustomer?.last_name || "",
+      email: myCustomer?.email || user?.email || "",
+      phone: f.phone || myCustomer?.phone || "",
+      address: f.address || myCustomer?.address || "",
+      city: f.city || myCustomer?.city || "",
+      zip: f.zip || myCustomer?.zip || "",
+    }));
+  }, [isCustomer, myCustomer, user]);
+
   const submitPublic = useServerFn(submitIntake);
   const submitManual = useServerFn(submitManualIntake);
+  const submitCustomer = useServerFn(submitCustomerIntake);
   const selected = services.find((s) => s.id === serviceId);
 
   const set = (k: keyof Form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
@@ -79,6 +114,10 @@ export function IntakeWizard({
         setServiceId("");
         setStep(1);
         onComplete?.();
+      } else if (isCustomer && myCustomer) {
+        await submitCustomer({ data: payload });
+        toast.success("Order placed");
+        setDone({ customerId: myCustomer.id, email: form.email.trim() });
       } else {
         const result = await submitPublic({ data: payload });
         toast.success("Intake submitted");
@@ -124,7 +163,21 @@ export function IntakeWizard({
             No payment has been collected. Nothing is filed until you approve it.
           </p>
         </div>
-        <CreateAccountPanel customerId={done.customerId} email={done.email} />
+        {isCustomer ? (
+          <div className="mt-6 rounded-2xl border border-border bg-card p-5">
+            <p className="text-sm text-foreground">
+              This order has been added to your account.
+            </p>
+            <Link
+              to="/portal"
+              className="mt-3 inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+            >
+              View My Orders
+            </Link>
+          </div>
+        ) : (
+          <CreateAccountPanel customerId={done.customerId} email={done.email} />
+        )}
       </div>
     );
   }
@@ -194,7 +247,18 @@ export function IntakeWizard({
                 <input className={inputClass} value={form.last_name} onChange={set("last_name")} />
               </Field>
               <Field label="Email" required>
-                <input type="email" className={inputClass} value={form.email} onChange={set("email")} />
+                <input
+                  type="email"
+                  className={`${inputClass} ${isCustomer ? "bg-secondary/60 text-muted-foreground" : ""}`}
+                  value={form.email}
+                  onChange={set("email")}
+                  readOnly={isCustomer}
+                />
+                {isCustomer && (
+                  <span className="mt-1 block text-xs text-muted-foreground">
+                    Tied to your account.
+                  </span>
+                )}
               </Field>
               <Field label="Phone">
                 <input className={inputClass} value={form.phone} onChange={set("phone")} />

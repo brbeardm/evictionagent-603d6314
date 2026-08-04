@@ -1,7 +1,6 @@
-import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
-import { LogOut, ShoppingBag, UserRound } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
+import { ShoppingBag, UserRound } from "lucide-react";
+import { PublicLayout } from "@/components/PublicLayout";
 
 export const Route = createFileRoute("/_authenticated/portal")({
   component: PortalLayout,
@@ -13,34 +12,10 @@ const links = [
 ] as const;
 
 function PortalLayout() {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-
-  async function signOut() {
-    await queryClient.cancelQueries();
-    queryClient.clear();
-    await supabase.auth.signOut();
-    navigate({ to: "/", replace: true });
-  }
-
   return (
-    <div className="min-h-screen bg-secondary/30">
-      <header className="border-b border-border bg-card">
-        <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3 px-4 py-3">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-xs font-bold text-primary-foreground">
-              EA
-            </span>
-            <span className="text-sm font-semibold text-foreground">Your case</span>
-          </Link>
-          <button
-            onClick={() => void signOut()}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-foreground hover:bg-secondary"
-          >
-            <LogOut className="h-4 w-4" /> Log out
-          </button>
-        </div>
-        <nav className="mx-auto flex w-full max-w-3xl gap-1 overflow-x-auto px-2 pb-2">
+    <PublicLayout>
+      <div className="mx-auto w-full max-w-3xl px-4 py-6">
+        <nav className="mb-6 flex gap-1 overflow-x-auto">
           {links.map(({ to, label, icon: Icon, exact }) => (
             <Link
               key={to}
@@ -53,10 +28,8 @@ function PortalLayout() {
             </Link>
           ))}
         </nav>
-      </header>
-      <main className="mx-auto w-full max-w-3xl px-4 py-6">
         <Outlet />
-      </main>
-    </div>
+      </div>
+    </PublicLayout>
   );
 }

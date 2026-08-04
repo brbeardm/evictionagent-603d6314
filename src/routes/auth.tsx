@@ -23,7 +23,7 @@ const inputClass =
 
 async function routeByRole(userId: string) {
   const { data } = await supabase.from("profiles").select("id").eq("id", userId).maybeSingle();
-  return data ? "/admin" : "/portal";
+  return data ? "/admin" : "/";
 }
 
 function AuthPage() {
