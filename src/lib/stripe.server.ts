@@ -63,36 +63,49 @@ export type StripeCheckoutSession = {
   customer_details?: { email?: string | null } | null;
 };
 
-export function createCheckoutSession(params: {
+export async function createCheckoutSession(params: {
   amountCents: number;
   productName: string;
   returnUrl: string;
   metadata: Record<string, string>;
   customerEmail?: string | null;
 }) {
-  return stripeRequest<StripeCheckoutSession>("/checkout/sessions", {
-    method: "POST",
-    body: {
-      // Newer Stripe API versions renamed the embedded checkout mode.
-      ui_mode: "embedded_page",
-      mode: "payment",
-      return_url: params.returnUrl,
-      customer_email: params.customerEmail || undefined,
-      metadata: params.metadata,
-      payment_intent_data: { metadata: params.metadata },
-      line_items: [
-        {
-          quantity: 1,
-          price_data: {
-            currency: "usd",
-            unit_amount: params.amountCents,
-            product_data: { name: params.productName },
-          },
+  const body = (uiMode: string) => ({
+    ui_mode: uiMode,
+    mode: "payment",
+    return_url: params.returnUrl,
+    customer_email: params.customerEmail || undefined,
+    metadata: params.metadata,
+    payment_intent_data: { metadata: params.metadata },
+    line_items: [
+      {
+        quantity: 1,
+        price_data: {
+          currency: "usd",
+          unit_amount: params.amountCents,
+          product_data: { name: params.productName },
         },
-      ],
-    },
+      },
+    ],
   });
+
+  // Newer Stripe API versions renamed the embedded mode to `embedded_page`;
+  // older accounts still only accept `embedded`. Try the new name, then fall back.
+  try {
+    return await stripeRequest<StripeCheckoutSession>("/checkout/sessions", {
+      method: "POST",
+      body: body("embedded_page"),
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "";
+    if (!/ui_mode/i.test(message)) throw err;
+    return await stripeRequest<StripeCheckoutSession>("/checkout/sessions", {
+      method: "POST",
+      body: body("embedded"),
+    });
+  }
 }
+
 
 export function retrieveCheckoutSession(sessionId: string) {
   return stripeRequest<StripeCheckoutSession>(
