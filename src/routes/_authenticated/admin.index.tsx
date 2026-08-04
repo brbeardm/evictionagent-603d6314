@@ -65,6 +65,19 @@ function Dashboard() {
     },
   });
 
+  const { data: paidCaseIds } = useQuery({
+    queryKey: ["admin", "paid-case-ids"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("case_id")
+        .eq("payment_status", "paid")
+        .not("case_id", "is", null);
+      if (error) throw error;
+      return new Set((data ?? []).map((o) => o.case_id as string));
+    },
+  });
+
   const { data: events = [], isLoading } = useQuery({
     queryKey: ["admin", "queue"],
     queryFn: async () => {
@@ -111,10 +124,10 @@ function Dashboard() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const filtered = useMemo(
-    () => (mine && me ? events.filter((e) => e.orders?.assigned_to === me) : events),
-    [events, mine, me],
-  );
+  const filtered = useMemo(() => {
+    const paidOnly = paidCaseIds ? events.filter((e) => paidCaseIds.has(e.case_id)) : [];
+    return mine && me ? paidOnly.filter((e) => e.orders?.assigned_to === me) : paidOnly;
+  }, [events, mine, me, paidCaseIds]);
 
   const grouped = useMemo(() => {
     const g: Record<Bucket, QueueRow[]> = { overdue: [], soon: [], upcoming: [] };

@@ -181,8 +181,11 @@ export type Database = {
           customer_id: string
           disposition: Database["public"]["Enums"]["order_disposition"]
           id: string
+          paid_at: string | null
           payment_status: Database["public"]["Enums"]["payment_status"]
           service_id: string
+          stripe_payment_id: string | null
+          stripe_session_id: string | null
         }
         Insert: {
           amount_cents?: number
@@ -192,8 +195,11 @@ export type Database = {
           customer_id: string
           disposition?: Database["public"]["Enums"]["order_disposition"]
           id?: string
+          paid_at?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
           service_id: string
+          stripe_payment_id?: string | null
+          stripe_session_id?: string | null
         }
         Update: {
           amount_cents?: number
@@ -203,8 +209,11 @@ export type Database = {
           customer_id?: string
           disposition?: Database["public"]["Enums"]["order_disposition"]
           id?: string
+          paid_at?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
           service_id?: string
+          stripe_payment_id?: string | null
+          stripe_session_id?: string | null
         }
         Relationships: [
           {

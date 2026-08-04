@@ -18,11 +18,13 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedPortalRouteImport } from './routes/_authenticated/portal'
 import { Route as ServicesSlugRouteImport } from './routes/services.$slug'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminIncompleteRouteImport } from './routes/_authenticated/admin.incomplete'
 import { Route as AuthenticatedAdminNewRouteImport } from './routes/_authenticated/admin.new'
 import { Route as AuthenticatedAdminPipelineRouteImport } from './routes/_authenticated/admin.pipeline'
 import { Route as AuthenticatedAdminTeamRouteImport } from './routes/_authenticated/admin.team'
 import { Route as AuthenticatedPortalIndexRouteImport } from './routes/_authenticated/portal.index'
 import { Route as AuthenticatedPortalProfileRouteImport } from './routes/_authenticated/portal.profile'
+import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
 import { Route as AuthenticatedAdminCustomersIndexRouteImport } from './routes/_authenticated/admin.customers.index'
 import { Route as AuthenticatedAdminCustomersIdRouteImport } from './routes/_authenticated/admin.customers.$id'
 
@@ -70,6 +72,12 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminIncompleteRoute =
+  AuthenticatedAdminIncompleteRouteImport.update({
+    id: '/incomplete',
+    path: '/incomplete',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminNewRoute = AuthenticatedAdminNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -98,6 +106,11 @@ const AuthenticatedPortalProfileRoute =
     path: '/profile',
     getParentRoute: () => AuthenticatedPortalRoute,
   } as any)
+const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
+  id: '/api/public/stripe-webhook',
+  path: '/api/public/stripe-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminCustomersIndexRoute =
   AuthenticatedAdminCustomersIndexRouteImport.update({
     id: '/customers/',
@@ -119,10 +132,12 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/portal': typeof AuthenticatedPortalRouteWithChildren
   '/services/$slug': typeof ServicesSlugRoute
+  '/admin/incomplete': typeof AuthenticatedAdminIncompleteRoute
   '/admin/new': typeof AuthenticatedAdminNewRoute
   '/admin/pipeline': typeof AuthenticatedAdminPipelineRoute
   '/admin/team': typeof AuthenticatedAdminTeamRoute
   '/portal/profile': typeof AuthenticatedPortalProfileRoute
+  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/portal/': typeof AuthenticatedPortalIndexRoute
   '/admin/customers/$id': typeof AuthenticatedAdminCustomersIdRoute
@@ -134,10 +149,12 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/start': typeof StartRoute
   '/services/$slug': typeof ServicesSlugRoute
+  '/admin/incomplete': typeof AuthenticatedAdminIncompleteRoute
   '/admin/new': typeof AuthenticatedAdminNewRoute
   '/admin/pipeline': typeof AuthenticatedAdminPipelineRoute
   '/admin/team': typeof AuthenticatedAdminTeamRoute
   '/portal/profile': typeof AuthenticatedPortalProfileRoute
+  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/portal': typeof AuthenticatedPortalIndexRoute
   '/admin/customers/$id': typeof AuthenticatedAdminCustomersIdRoute
@@ -153,10 +170,12 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/portal': typeof AuthenticatedPortalRouteWithChildren
   '/services/$slug': typeof ServicesSlugRoute
+  '/_authenticated/admin/incomplete': typeof AuthenticatedAdminIncompleteRoute
   '/_authenticated/admin/new': typeof AuthenticatedAdminNewRoute
   '/_authenticated/admin/pipeline': typeof AuthenticatedAdminPipelineRoute
   '/_authenticated/admin/team': typeof AuthenticatedAdminTeamRoute
   '/_authenticated/portal/profile': typeof AuthenticatedPortalProfileRoute
+  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/portal/': typeof AuthenticatedPortalIndexRoute
   '/_authenticated/admin/customers/$id': typeof AuthenticatedAdminCustomersIdRoute
@@ -172,10 +191,12 @@ export interface FileRouteTypes {
     | '/admin'
     | '/portal'
     | '/services/$slug'
+    | '/admin/incomplete'
     | '/admin/new'
     | '/admin/pipeline'
     | '/admin/team'
     | '/portal/profile'
+    | '/api/public/stripe-webhook'
     | '/admin/'
     | '/portal/'
     | '/admin/customers/$id'
@@ -187,10 +208,12 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/start'
     | '/services/$slug'
+    | '/admin/incomplete'
     | '/admin/new'
     | '/admin/pipeline'
     | '/admin/team'
     | '/portal/profile'
+    | '/api/public/stripe-webhook'
     | '/admin'
     | '/portal'
     | '/admin/customers/$id'
@@ -205,10 +228,12 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/portal'
     | '/services/$slug'
+    | '/_authenticated/admin/incomplete'
     | '/_authenticated/admin/new'
     | '/_authenticated/admin/pipeline'
     | '/_authenticated/admin/team'
     | '/_authenticated/portal/profile'
+    | '/api/public/stripe-webhook'
     | '/_authenticated/admin/'
     | '/_authenticated/portal/'
     | '/_authenticated/admin/customers/$id'
@@ -222,6 +247,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   StartRoute: typeof StartRoute
   ServicesSlugRoute: typeof ServicesSlugRoute
+  ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -289,6 +315,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/incomplete': {
+      id: '/_authenticated/admin/incomplete'
+      path: '/incomplete'
+      fullPath: '/admin/incomplete'
+      preLoaderRoute: typeof AuthenticatedAdminIncompleteRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/new': {
       id: '/_authenticated/admin/new'
       path: '/new'
@@ -324,6 +357,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPortalProfileRouteImport
       parentRoute: typeof AuthenticatedPortalRoute
     }
+    '/api/public/stripe-webhook': {
+      id: '/api/public/stripe-webhook'
+      path: '/api/public/stripe-webhook'
+      fullPath: '/api/public/stripe-webhook'
+      preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin/customers/': {
       id: '/_authenticated/admin/customers/'
       path: '/customers'
@@ -342,6 +382,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminIncompleteRoute: typeof AuthenticatedAdminIncompleteRoute
   AuthenticatedAdminNewRoute: typeof AuthenticatedAdminNewRoute
   AuthenticatedAdminPipelineRoute: typeof AuthenticatedAdminPipelineRoute
   AuthenticatedAdminTeamRoute: typeof AuthenticatedAdminTeamRoute
@@ -351,6 +392,7 @@ interface AuthenticatedAdminRouteChildren {
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminIncompleteRoute: AuthenticatedAdminIncompleteRoute,
   AuthenticatedAdminNewRoute: AuthenticatedAdminNewRoute,
   AuthenticatedAdminPipelineRoute: AuthenticatedAdminPipelineRoute,
   AuthenticatedAdminTeamRoute: AuthenticatedAdminTeamRoute,
@@ -395,6 +437,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   StartRoute: StartRoute,
   ServicesSlugRoute: ServicesSlugRoute,
+  ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
