@@ -76,7 +76,13 @@ export function CaseEventsPanel({ caseId }: { caseId: string }) {
   });
 
   const patch = useMutation({
-    mutationFn: async ({ id, values }: { id: string; values: Record<string, string | null> }) => {
+    mutationFn: async ({
+      id,
+      values,
+    }: {
+      id: string;
+      values: { due_date?: string | null; completed_at?: string | null };
+    }) => {
       const { error } = await supabase.from("case_events").update(values).eq("id", id);
       if (error) throw error;
     },
