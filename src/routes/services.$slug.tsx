@@ -83,8 +83,8 @@ function ServiceDetail() {
         <div className="mt-8 rounded-2xl border border-primary/30 bg-primary/5 p-5">
           <h2 className="text-lg font-semibold text-foreground">Ready to move forward?</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Tell us about your situation. It takes about three minutes and there's no payment
-            in this step.
+            Tell us about your situation — about three minutes — then pay securely to put your
+            case in the queue.
           </p>
           <Link
             to="/start"

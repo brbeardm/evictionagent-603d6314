@@ -16,6 +16,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as StartRouteImport } from './routes/start'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedPortalRouteImport } from './routes/_authenticated/portal'
+import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as ServicesSlugRouteImport } from './routes/services.$slug'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminIncompleteRouteImport } from './routes/_authenticated/admin.incomplete'
@@ -61,6 +62,11 @@ const AuthenticatedPortalRoute = AuthenticatedPortalRouteImport.update({
   id: '/portal',
   path: '/portal',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
+  id: '/checkout/return',
+  path: '/checkout/return',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ServicesSlugRoute = ServicesSlugRouteImport.update({
   id: '/services/$slug',
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/start': typeof StartRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/portal': typeof AuthenticatedPortalRouteWithChildren
+  '/checkout/return': typeof CheckoutReturnRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/admin/incomplete': typeof AuthenticatedAdminIncompleteRoute
   '/admin/new': typeof AuthenticatedAdminNewRoute
@@ -148,6 +155,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/start': typeof StartRoute
+  '/checkout/return': typeof CheckoutReturnRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/admin/incomplete': typeof AuthenticatedAdminIncompleteRoute
   '/admin/new': typeof AuthenticatedAdminNewRoute
@@ -169,6 +177,7 @@ export interface FileRoutesById {
   '/start': typeof StartRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/portal': typeof AuthenticatedPortalRouteWithChildren
+  '/checkout/return': typeof CheckoutReturnRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/_authenticated/admin/incomplete': typeof AuthenticatedAdminIncompleteRoute
   '/_authenticated/admin/new': typeof AuthenticatedAdminNewRoute
@@ -190,6 +199,7 @@ export interface FileRouteTypes {
     | '/start'
     | '/admin'
     | '/portal'
+    | '/checkout/return'
     | '/services/$slug'
     | '/admin/incomplete'
     | '/admin/new'
@@ -207,6 +217,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/start'
+    | '/checkout/return'
     | '/services/$slug'
     | '/admin/incomplete'
     | '/admin/new'
@@ -227,6 +238,7 @@ export interface FileRouteTypes {
     | '/start'
     | '/_authenticated/admin'
     | '/_authenticated/portal'
+    | '/checkout/return'
     | '/services/$slug'
     | '/_authenticated/admin/incomplete'
     | '/_authenticated/admin/new'
@@ -246,6 +258,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   StartRoute: typeof StartRoute
+  CheckoutReturnRoute: typeof CheckoutReturnRoute
   ServicesSlugRoute: typeof ServicesSlugRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
 }
@@ -300,6 +313,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/portal'
       preLoaderRoute: typeof AuthenticatedPortalRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/checkout/return': {
+      id: '/checkout/return'
+      path: '/checkout/return'
+      fullPath: '/checkout/return'
+      preLoaderRoute: typeof CheckoutReturnRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/services/$slug': {
       id: '/services/$slug'
@@ -436,6 +456,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   StartRoute: StartRoute,
+  CheckoutReturnRoute: CheckoutReturnRoute,
   ServicesSlugRoute: ServicesSlugRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
 }

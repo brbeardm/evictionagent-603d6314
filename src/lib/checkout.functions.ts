@@ -53,5 +53,7 @@ export const getCheckoutStatus = createServerFn({ method: "POST" })
       status: session.status,
       paymentStatus: session.payment_status,
       orderId: session.metadata?.["order_id"] ?? null,
+      customerId: session.metadata?.["customer_id"] ?? null,
+      email: session.customer_details?.email ?? session.customer_email ?? null,
     };
   });
