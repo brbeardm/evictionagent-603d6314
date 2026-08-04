@@ -59,6 +59,8 @@ export type StripeCheckoutSession = {
   payment_status: string | null;
   payment_intent: string | { id: string } | null;
   metadata: Record<string, string> | null;
+  customer_email?: string | null;
+  customer_details?: { email?: string | null } | null;
 };
 
 export function createCheckoutSession(params: {
