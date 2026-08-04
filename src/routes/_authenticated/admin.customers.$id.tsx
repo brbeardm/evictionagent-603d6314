@@ -211,19 +211,38 @@ function CustomerDetail() {
       </Link>
 
       <section className="rounded-2xl border border-border bg-card p-5">
-        <h1 className="text-xl font-semibold text-foreground">
-          {c["first_name"]} {c["last_name"]}
-        </h1>
-        <div className="mt-3 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
-          <p>{c["email"]}</p>
-          <p>{c["phone"] ?? "—"}</p>
-          <p className="sm:col-span-2">
-            {[c["address"], c["city"], c["zip"]].filter(Boolean).join(", ") || "—"}
-          </p>
-          <p>Precinct: {c["precinct"] ?? "—"}</p>
-          <p>Source: {titleize(c["source"])}</p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <h1 className="text-xl font-semibold text-foreground">
+            {c["first_name"]} {c["last_name"]}
+          </h1>
+          {!editing && (
+            <button
+              onClick={() => setEditing(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-secondary"
+            >
+              <Pencil className="h-3.5 w-3.5" /> Edit
+            </button>
+          )}
         </div>
+        {editing ? (
+          <CustomerEditForm
+            customerId={id}
+            initial={toForm(c)}
+            onDone={() => setEditing(false)}
+          />
+        ) : (
+          <div className="mt-3 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
+            <p>{c["email"]}</p>
+            <p>{c["phone"] ?? "—"}</p>
+            <p className="sm:col-span-2">
+              {[c["address"], c["city"], c["zip"]].filter(Boolean).join(", ") || "—"}
+            </p>
+            <p>Precinct: {c["precinct"] ?? "—"}</p>
+            <p>Source: {titleize(c["source"])}</p>
+          </div>
+        )}
       </section>
+
 
       <div className="grid gap-3 sm:grid-cols-2">
         <Highlight
