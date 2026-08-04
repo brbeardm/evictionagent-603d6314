@@ -115,13 +115,11 @@ export function IntakeWizard({
         setStep(1);
         onComplete?.();
       } else if (isCustomer && myCustomer) {
-        await submitCustomer({ data: payload });
-        toast.success("Order placed");
-        setDone({ customerId: myCustomer.id, email: form.email.trim() });
+        const result = await submitCustomer({ data: payload });
+        setDone({ orderId: result.orderId });
       } else {
         const result = await submitPublic({ data: payload });
-        toast.success("Intake submitted");
-        setDone({ customerId: result.customerId, email: form.email.trim() });
+        setDone({ orderId: result.orderId });
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
@@ -133,54 +131,18 @@ export function IntakeWizard({
   if (done) {
     return (
       <div>
-        <div className="rounded-2xl border border-primary/30 bg-primary/5 p-6">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            <Check className="h-5 w-5" />
-          </div>
-          <h2 className="mt-4 text-2xl font-semibold text-foreground">
-            We've got your information.
-          </h2>
-          <p className="mt-2 text-sm text-muted-foreground">Here's what happens next:</p>
-          <ol className="mt-4 space-y-3 text-sm text-foreground">
-            <li>
-              <span className="font-semibold">1. Intake review (within 1 business day).</span> A
-              case specialist checks your dates against the Harris County court record.
-            </li>
-            <li>
-              <span className="font-semibold">2. We call or text you.</span> We confirm your
-              deadline, explain your options, and collect anything still missing.
-            </li>
-            <li>
-              <span className="font-semibold">3. Documents prepared and filed.</span> You review
-              and sign; we file with your JP precinct court as your authorized agent.
-            </li>
-            <li>
-              <span className="font-semibold">4. You get every key date.</span> Trial date, appeal
-              deadline, and the earliest a writ can issue — tracked for you.
-            </li>
-          </ol>
-          <p className="mt-5 text-xs text-muted-foreground">
-            No payment has been collected. Nothing is filed until you approve it.
-          </p>
+        <h2 className="text-lg font-semibold text-foreground">Complete your payment</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {selected ? `${selected.name} — ${money(selected.price_cents)}. ` : ""}
+          Your details are saved. Pay securely below to put your case in the queue.
+        </p>
+        <div className="mt-5">
+          <EmbeddedCheckoutPanel orderId={done.orderId} />
         </div>
-        {isCustomer ? (
-          <div className="mt-6 rounded-2xl border border-border bg-card p-5">
-            <p className="text-sm text-foreground">
-              This order has been added to your account.
-            </p>
-            <Link
-              to="/portal"
-              className="mt-3 inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
-            >
-              View My Orders
-            </Link>
-          </div>
-        ) : (
-          <CreateAccountPanel customerId={done.customerId} email={done.email} />
-        )}
       </div>
     );
   }
+
 
 
 
