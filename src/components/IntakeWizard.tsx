@@ -279,8 +279,8 @@ export function IntakeWizard({
             <Row label="Precinct" value={form.precinct || "—"} />
           </div>
           <p className="text-xs text-muted-foreground">
-            Submitting does not collect payment and does not create an attorney-client
-            relationship.
+            Next you'll pay securely on the following step. Using this service does not create an
+            attorney-client relationship.
           </p>
         </div>
       )}
@@ -310,7 +310,7 @@ export function IntakeWizard({
             onClick={handleSubmit}
             className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
           >
-            {saving ? "Submitting…" : "Submit intake"}
+            {saving ? "Submitting…" : mode === "manual" ? "Submit intake" : "Continue to payment"}
           </button>
         )}
       </div>
