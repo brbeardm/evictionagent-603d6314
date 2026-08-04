@@ -20,6 +20,7 @@ import { Route as ServicesSlugRouteImport } from './routes/services.$slug'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminNewRouteImport } from './routes/_authenticated/admin.new'
 import { Route as AuthenticatedAdminPipelineRouteImport } from './routes/_authenticated/admin.pipeline'
+import { Route as AuthenticatedAdminTeamRouteImport } from './routes/_authenticated/admin.team'
 import { Route as AuthenticatedPortalIndexRouteImport } from './routes/_authenticated/portal.index'
 import { Route as AuthenticatedPortalProfileRouteImport } from './routes/_authenticated/portal.profile'
 import { Route as AuthenticatedAdminCustomersIndexRouteImport } from './routes/_authenticated/admin.customers.index'
@@ -80,6 +81,11 @@ const AuthenticatedAdminPipelineRoute =
     path: '/pipeline',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminTeamRoute = AuthenticatedAdminTeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedPortalIndexRoute =
   AuthenticatedPortalIndexRouteImport.update({
     id: '/',
@@ -115,6 +121,7 @@ export interface FileRoutesByFullPath {
   '/services/$slug': typeof ServicesSlugRoute
   '/admin/new': typeof AuthenticatedAdminNewRoute
   '/admin/pipeline': typeof AuthenticatedAdminPipelineRoute
+  '/admin/team': typeof AuthenticatedAdminTeamRoute
   '/portal/profile': typeof AuthenticatedPortalProfileRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/portal/': typeof AuthenticatedPortalIndexRoute
@@ -129,6 +136,7 @@ export interface FileRoutesByTo {
   '/services/$slug': typeof ServicesSlugRoute
   '/admin/new': typeof AuthenticatedAdminNewRoute
   '/admin/pipeline': typeof AuthenticatedAdminPipelineRoute
+  '/admin/team': typeof AuthenticatedAdminTeamRoute
   '/portal/profile': typeof AuthenticatedPortalProfileRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/portal': typeof AuthenticatedPortalIndexRoute
@@ -147,6 +155,7 @@ export interface FileRoutesById {
   '/services/$slug': typeof ServicesSlugRoute
   '/_authenticated/admin/new': typeof AuthenticatedAdminNewRoute
   '/_authenticated/admin/pipeline': typeof AuthenticatedAdminPipelineRoute
+  '/_authenticated/admin/team': typeof AuthenticatedAdminTeamRoute
   '/_authenticated/portal/profile': typeof AuthenticatedPortalProfileRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/portal/': typeof AuthenticatedPortalIndexRoute
@@ -165,6 +174,7 @@ export interface FileRouteTypes {
     | '/services/$slug'
     | '/admin/new'
     | '/admin/pipeline'
+    | '/admin/team'
     | '/portal/profile'
     | '/admin/'
     | '/portal/'
@@ -179,6 +189,7 @@ export interface FileRouteTypes {
     | '/services/$slug'
     | '/admin/new'
     | '/admin/pipeline'
+    | '/admin/team'
     | '/portal/profile'
     | '/admin'
     | '/portal'
@@ -196,6 +207,7 @@ export interface FileRouteTypes {
     | '/services/$slug'
     | '/_authenticated/admin/new'
     | '/_authenticated/admin/pipeline'
+    | '/_authenticated/admin/team'
     | '/_authenticated/portal/profile'
     | '/_authenticated/admin/'
     | '/_authenticated/portal/'
@@ -291,6 +303,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminPipelineRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/team': {
+      id: '/_authenticated/admin/team'
+      path: '/team'
+      fullPath: '/admin/team'
+      preLoaderRoute: typeof AuthenticatedAdminTeamRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/portal/': {
       id: '/_authenticated/portal/'
       path: '/'
@@ -325,6 +344,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminNewRoute: typeof AuthenticatedAdminNewRoute
   AuthenticatedAdminPipelineRoute: typeof AuthenticatedAdminPipelineRoute
+  AuthenticatedAdminTeamRoute: typeof AuthenticatedAdminTeamRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminCustomersIdRoute: typeof AuthenticatedAdminCustomersIdRoute
   AuthenticatedAdminCustomersIndexRoute: typeof AuthenticatedAdminCustomersIndexRoute
@@ -333,6 +353,7 @@ interface AuthenticatedAdminRouteChildren {
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminNewRoute: AuthenticatedAdminNewRoute,
   AuthenticatedAdminPipelineRoute: AuthenticatedAdminPipelineRoute,
+  AuthenticatedAdminTeamRoute: AuthenticatedAdminTeamRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminCustomersIdRoute: AuthenticatedAdminCustomersIdRoute,
   AuthenticatedAdminCustomersIndexRoute: AuthenticatedAdminCustomersIndexRoute,
